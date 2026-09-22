@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${post.title)}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="article-shell">
+    <a class="back-link" th:href="@{/posts}">← 返回文章</a>
+    <header class="article-header">
+        <div class="post-card-meta">
+            <span th:text="${post.status}">PUBLISHED</span>
+            <span th:text="${post.author.nickname}">作者</span>
+            <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">时间</span>
+        </div>
+        <h1 th:text="${post.title}">文章标题</h1>
+        <p class="article-summary" th:if="${post.summary}" th:text="${post.summary}">摘要</p>
+        <div class="tag-list">
+            <span class="tag" th:each="tag : ${post.tags}" th:text="${tag.name}">标签</span>
+        </div>
+        <div class="article-actions">
+            <form th:if="${favorite}" th:action="@{/posts/{id}/unfavorite(id=${post.id})}" method="post">
+                <button class="secondary-button" type="submit">已收藏</button>
+            </form>
+            <form th:unless="${favorite}" th:action="@{/posts/{id}/favorite(id=${post.id})}" method="post">
+                <button class="secondary-button" type="submit">收藏</button>
+            </form>
+            <a class="secondary-button" th:if="${canManage}" th:href="@{/posts/{id}/edit(id=${post.id})}">编辑</a>
+        </div>
+    </header>
+    <article class="markdown-body" th:utext="${contentHtml}"></article>
+    <section id="comments" class="comments-section">
+        <div class="section-title">
+            <h2>评论</h2>
+            <span class="muted" th:text="${#lists.size(comments)} + ' 条'">0 条</span>
+        </div>
+        <div class="comment-list" th:if="${!#lists.isEmpty(comments)}">
+            <article class="comment" th:each="comment : ${comments}">
+                <div class="comment-meta">
+                    <strong th:text="${comment.user.nickname}">用户</strong>
+                    <span th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">时间</span>
+                </div>
+                <p th:text="${comment.content}">评论内容</p>
+                <form th:if="${comment.user.id == currentUser.id or isAdmin}"
+                      th:action="@{/comments/{id}/delete(id=${comment.id})}" method="post">
+                    <button class="text-danger" type="submit">删除</button>
+                </form>
+            </article>
+        </div>
+    <form class="comment-form" th:if="${post.status.name() == 'PUBLISHED'}"
+          th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
+            <textarea name="content" rows="4" maxlength="2000" placeholder="写下你的想法..." required></textarea>
+            <button class="primary-button" type="submit">发表评论</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

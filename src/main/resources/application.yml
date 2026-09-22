@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: blog
+  datasource:
+    url: jdbc:h2:file:./data/blog;MODE=MySQL;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: 8080
+  error:
+    whitelabel:
+      enabled: false
+
+app:
+  storage-path: ./storage/uploads
+  seed:
+    enabled: false
+    admin-username: admin
+    admin-password:
+    owner-username: owner
+    owner-password:
+    user-username: user
+    user-password:

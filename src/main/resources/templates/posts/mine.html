@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('我的文章')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="page-shell">
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">YOUR WRITING</p>
+            <h1>我的文章</h1>
+            <p class="muted">管理自己的草稿和已发布内容。</p>
+        </div>
+        <a class="primary-button" th:href="@{/posts/new}">新建文章</a>
+    </section>
+    <div class="table-card" th:if="${!#lists.isEmpty(posts)}">
+        <table>
+            <thead><tr><th>标题</th><th>状态</th><th>更新时间</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="post : ${posts}">
+                <td><a th:href="@{/posts/{slug}(slug=${post.slug})}" th:text="${post.title}">标题</a></td>
+                <td><span class="status" th:text="${post.status}">DRAFT</span></td>
+                <td th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">时间</td>
+                <td class="table-actions">
+                    <a th:href="@{/posts/{id}/edit(id=${post.id})}">编辑</a>
+                    <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
+                        <button class="text-danger" type="submit">删除</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="empty-state" th:if="${#lists.isEmpty(posts)}">
+        <h2>还没有文章</h2>
+        <a class="primary-button" th:href="@{/posts/new}">开始写作</a>
+    </div>
+</main>
+</body>
+</html>

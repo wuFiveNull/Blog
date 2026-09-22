@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('用户管理')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="page-shell">
+    <section class="page-heading">
+        <div><p class="eyebrow">ADMIN</p><h1>用户管理</h1></div>
+        <a class="secondary-button" th:href="@{/admin/posts}">返回文章</a>
+    </section>
+    <section class="admin-form-card">
+        <h2>添加账号</h2>
+        <form class="inline-form" th:action="@{/admin/users}" method="post">
+            <input name="username" placeholder="用户名" required>
+            <input name="nickname" placeholder="昵称" required>
+            <input name="password" type="password" placeholder="初始密码" required>
+            <select name="role">
+                <option value="USER">普通用户</option>
+                <option value="OWNER">站长</option>
+                <option value="ADMIN">管理员</option>
+            </select>
+            <button class="primary-button" type="submit">创建</button>
+        </form>
+    </section>
+    <div class="table-card">
+        <table>
+            <thead><tr><th>用户名</th><th>昵称</th><th>角色</th><th>状态</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.username}">username</td>
+                <td th:text="${user.nickname}">昵称</td>
+                <td><span class="tag" th:each="role : ${user.roles}" th:text="${role.code}">USER</span></td>
+                <td th:text="${user.status}">ACTIVE</td>
+                <td>
+                    <form th:if="${user.status.name() == 'ACTIVE'}" th:action="@{/admin/users/{id}/disable(id=${user.id})}" method="post">
+                        <button class="text-danger" type="submit">禁用</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

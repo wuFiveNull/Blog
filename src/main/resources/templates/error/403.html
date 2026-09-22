@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('无权限')}"></head>
+<body>
+<main class="error-page">
+    <h1>403</h1>
+    <p>你没有权限访问这里。</p>
+    <a class="primary-button" th:href="@{/posts}">返回文章</a>
+</main>
+</body>
+</html>

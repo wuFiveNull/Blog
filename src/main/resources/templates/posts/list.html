@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('文章')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="page-shell">
+    <section class="page-heading">
+        <div>
+            <p class="eyebrow">PRIVATE KNOWLEDGE BASE</p>
+            <h1>文章</h1>
+            <p class="muted">记录实习、项目和技术思考。</p>
+        </div>
+        <a class="primary-button" th:href="@{/posts/new}">写一篇</a>
+    </section>
+    <form class="search-bar" th:action="@{/posts}" method="get">
+        <input type="search" name="q" th:value="${query}" placeholder="搜索标题或摘要">
+        <button class="secondary-button" type="submit">搜索</button>
+    </form>
+    <div class="empty-state" th:if="${#lists.isEmpty(posts)}">
+        <h2>还没有可见文章</h2>
+        <p class="muted">写下第一篇记录吧。</p>
+    </div>
+    <section class="post-grid" th:unless="${#lists.isEmpty(posts)}">
+        <article class="post-card" th:each="post : ${posts}">
+            <div class="post-card-meta">
+                <span th:text="${#temporals.format(post.publishedAt, 'yyyy-MM-dd')}">2026-01-01</span>
+                <span th:text="${post.author.nickname}">作者</span>
+            </div>
+            <h2><a th:href="@{/posts/{slug}(slug=${post.slug})}" th:text="${post.title}">标题</a></h2>
+            <p class="post-summary" th:text="${post.summary != null ? post.summary : '暂无摘要'}">摘要</p>
+            <div class="tag-list">
+                <span class="tag" th:each="tag : ${post.tags}" th:text="${tag.name}">标签</span>
+            </div>
+        </article>
+    </section>
+</main>
+</body>
+</html>

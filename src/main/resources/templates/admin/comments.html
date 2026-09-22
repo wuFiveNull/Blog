@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('评论管理')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="page-shell">
+    <section class="page-heading">
+        <div><p class="eyebrow">ADMIN</p><h1>评论管理</h1></div>
+        <a class="secondary-button" th:href="@{/admin/posts}">返回文章</a>
+    </section>
+    <div class="comment-list admin-comments">
+        <article class="comment" th:each="comment : ${comments}">
+            <div class="comment-meta">
+                <strong th:text="${comment.user.nickname}">用户</strong>
+                <span th:text="${comment.post.title}">文章</span>
+                <span th:text="${comment.status}">VISIBLE</span>
+            </div>
+            <p th:text="${comment.content}">内容</p>
+            <form th:if="${comment.status.name() == 'VISIBLE'}"
+                  th:action="@{/admin/comments/{id}/hide(id=${comment.id})}" method="post">
+                <button class="text-danger" type="submit">隐藏</button>
+            </form>
+        </article>
+    </div>
+</main>
+</body>
+</html>

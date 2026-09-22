@@ -10,6 +10,7 @@ target/
 # Local configuration and secrets
 .env
 .env.*
+!.env.example
 application-local.yml
 application-local.yaml
 *.pem
@@ -19,8 +20,8 @@ application-local.yaml
 logs/
 *.log
 storage/uploads/
+data/
 
 # OS files
 .DS_Store
 Thumbs.db
-

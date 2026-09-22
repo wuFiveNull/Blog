@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('管理文章')}"></head>
+<body>
+<div th:replace="~{fragments/layout :: nav}"></div>
+<main class="page-shell">
+    <section class="page-heading">
+        <div><p class="eyebrow">ADMIN</p><h1>文章管理</h1></div>
+        <div class="page-actions"><a class="secondary-button" th:href="@{/admin/users}">用户</a><a class="secondary-button" th:href="@{/admin/comments}">评论</a></div>
+    </section>
+    <div class="table-card">
+        <table>
+            <thead><tr><th>标题</th><th>作者</th><th>状态</th><th>更新时间</th></tr></thead>
+            <tbody>
+            <tr th:each="post : ${posts}">
+                <td><a th:href="@{/posts/{slug}(slug=${post.slug})}" th:text="${post.title}">标题</a></td>
+                <td th:text="${post.author.nickname}">作者</td>
+                <td><span class="status" th:text="${post.status}">DRAFT</span></td>
+                <td th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">时间</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
