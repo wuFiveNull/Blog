@@ -14,7 +14,21 @@
         <a class="primary-button" th:href="@{/posts/new}">写一篇</a>
     </section>
     <form class="search-bar" th:action="@{/posts}" method="get">
-        <input type="search" name="q" th:value="${query}" placeholder="搜索标题或摘要">
+        <input type="search" name="q" th:value="${query}" placeholder="搜索文章标题">
+        <select name="category">
+            <option value="" th:selected="${selectedCategory == ''}">全部分类</option>
+            <option th:each="category : ${categoryOptions}"
+                    th:value="${category.name}"
+                    th:text="${category.name}"
+                    th:selected="${category.name == selectedCategory}">分类</option>
+        </select>
+        <select name="tag">
+            <option value="" th:selected="${selectedTag == ''}">全部标签</option>
+            <option th:each="tagOption : ${tagOptions}"
+                    th:value="${tagOption.name}"
+                    th:text="'#' + tagOption.name"
+                    th:selected="${tagOption.name == selectedTag}">#标签</option>
+        </select>
         <button class="secondary-button" type="submit">搜索</button>
     </form>
     <div class="empty-state" th:if="${#lists.isEmpty(posts)}">
@@ -26,11 +40,14 @@
             <div class="post-card-meta">
                 <span th:text="${#temporals.format(post.publishedAt, 'yyyy-MM-dd')}">2026-01-01</span>
                 <span th:text="${post.author.nickname}">作者</span>
+                <span th:if="${post.category != null}" th:text="${post.category.name}">分类</span>
             </div>
             <h2><a th:href="@{/posts/{slug}(slug=${post.slug})}" th:text="${post.title}">标题</a></h2>
             <p class="post-summary" th:text="${post.summary != null ? post.summary : '暂无摘要'}">摘要</p>
             <div class="tag-list">
-                <span class="tag" th:each="tag : ${post.tags}" th:text="${tag.name}">标签</span>
+                <a class="tag" th:each="tag : ${post.tags}"
+                   th:href="@{/posts(tag=${tag.name})}"
+                   th:text="'#' + tag.name">#标签</a>
             </div>
         </article>
     </section>

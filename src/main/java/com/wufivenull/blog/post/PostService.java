@@ -20,48 +20,63 @@ public class PostService {
     private final PostRepository postRepository;
     private final RoleRepository roleRepository;
     private final TagRepository tagRepository;
+    private final CategoryRepository categoryRepository;
 
     public PostService(PostRepository postRepository, RoleRepository roleRepository,
-                       TagRepository tagRepository) {
+                       TagRepository tagRepository, CategoryRepository categoryRepository) {
         this.postRepository = postRepository;
         this.roleRepository = roleRepository;
         this.tagRepository = tagRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Transactional
     public Post create(UserAccount author, String title, String summary, String content,
-                       String roleText, String tagText, boolean publish) {
+                       String roleText, String categoryText, String tagText, boolean publish) {
         String slug = uniqueSlug(title);
         Post post = new Post(title.trim(), slug, author);
-        apply(post, summary, content, roleText, tagText, publish);
+        apply(post, summary, content, roleText, categoryText, tagText, publish);
         return postRepository.save(post);
     }
 
     @Transactional
     public Post update(Post post, String title, String summary, String content,
-                       String roleText, String tagText, boolean publish) {
+                       String roleText, String categoryText, String tagText, boolean publish) {
         post.setTitle(title.trim());
         post.setSummary(blankToNull(summary));
         post.setContentMarkdown(content);
         post.getAllowedRoles().clear();
         post.getAllowedRoles().addAll(resolveRoles(roleText));
+        post.setCategory(resolveCategory(categoryText));
         post.getTags().clear();
         post.getTags().addAll(resolveTags(tagText));
         if (publish) {
             post.publish();
+        } else {
+            post.unpublish();
         }
         return postRepository.save(post);
     }
 
     private void apply(Post post, String summary, String content, String roleText,
-                       String tagText, boolean publish) {
+                       String categoryText, String tagText, boolean publish) {
         post.setSummary(blankToNull(summary));
         post.setContentMarkdown(content);
         post.getAllowedRoles().addAll(resolveRoles(roleText));
+        post.setCategory(resolveCategory(categoryText));
         post.getTags().addAll(resolveTags(tagText));
         if (publish) {
             post.publish();
         }
+    }
+
+    private Category resolveCategory(String categoryText) {
+        if (categoryText == null || categoryText.isBlank()) {
+            return null;
+        }
+        String name = categoryText.trim();
+        return categoryRepository.findByNameIgnoreCase(name)
+                .orElseGet(() -> categoryRepository.save(new Category(name)));
     }
 
     private Set<Role> resolveRoles(String roleText) {
@@ -84,12 +99,17 @@ public class PostService {
         if (tagText == null || tagText.isBlank()) {
             return Set.of();
         }
-        return Arrays.stream(tagText.split(","))
+        return Arrays.stream(tagText.split("[,，\\s]+"))
                 .map(String::trim)
+                .map(this::normalizeTagName)
                 .filter(value -> !value.isBlank())
                 .map(value -> tagRepository.findByNameIgnoreCase(value)
                         .orElseGet(() -> tagRepository.save(new Tag(value))))
                 .collect(Collectors.toSet());
+    }
+
+    private String normalizeTagName(String value) {
+        return value.replaceFirst("^#+", "").trim();
     }
 
     private String uniqueSlug(String title) {

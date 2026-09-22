@@ -7,6 +7,7 @@ public class PostForm {
     private String summary = "";
     private String contentMarkdown = "";
     private String allowedRoles = "OWNER,USER";
+    private String category = "";
     private String tags = "";
     private boolean publish;
 
@@ -48,6 +49,14 @@ public class PostForm {
 
     public void setAllowedRoles(String allowedRoles) {
         this.allowedRoles = allowedRoles;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getTags() {

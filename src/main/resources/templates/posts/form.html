@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head(${postForm.id == null ? '写文章' : '编辑文章')}"></head>
+<head th:replace="~{fragments/layout :: head(${postForm.id == null ? '写文章' : '编辑文章'})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: nav}"></div>
 <main class="editor-shell">
@@ -27,8 +27,15 @@
             <label class="check-label"><input type="checkbox" class="role-choice" value="USER"> 其他用户</label>
             <input id="allowedRoles" type="hidden" th:field="*{allowedRoles}">
         </div>
+        <label>分类
+            <input th:field="*{category}" list="category-options" maxlength="80"
+                   placeholder="实习 / 项目 / 八股">
+            <datalist id="category-options">
+                <option th:each="category : ${categoryOptions}" th:value="${category.name}"></option>
+            </datalist>
+        </label>
         <label>标签
-            <input th:field="*{tags}" placeholder="实习, Java, 项目经验">
+            <input th:field="*{tags}" placeholder="#mysql, #Java, #项目经验">
         </label>
         <div class="editor-grid">
             <label>Markdown 正文

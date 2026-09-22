@@ -37,6 +37,10 @@ public class Post {
     @JoinColumn(name = "author_id", nullable = false)
     private UserAccount author;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "post_allowed_roles",
@@ -99,6 +103,11 @@ public class Post {
         status = PostStatus.ARCHIVED;
     }
 
+    public void unpublish() {
+        status = PostStatus.DRAFT;
+        publishedAt = null;
+    }
+
     public Long getId() {
         return id;
     }
@@ -141,6 +150,14 @@ public class Post {
 
     public UserAccount getAuthor() {
         return author;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public Set<Role> getAllowedRoles() {

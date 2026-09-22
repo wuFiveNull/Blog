@@ -23,18 +23,23 @@ public class PostController {
     private final PostService postService;
     private final PostAccessService accessService;
     private final AccountService accountService;
+    private final TagRepository tagRepository;
+    private final CategoryRepository categoryRepository;
     private final CommentRepository commentRepository;
     private final FavoriteRepository favoriteRepository;
     private final MarkdownService markdownService;
 
     public PostController(PostRepository postRepository, PostService postService,
                           PostAccessService accessService, AccountService accountService,
+                          TagRepository tagRepository, CategoryRepository categoryRepository,
                           CommentRepository commentRepository, FavoriteRepository favoriteRepository,
                           MarkdownService markdownService) {
         this.postRepository = postRepository;
         this.postService = postService;
         this.accessService = accessService;
         this.accountService = accountService;
+        this.tagRepository = tagRepository;
+        this.categoryRepository = categoryRepository;
         this.commentRepository = commentRepository;
         this.favoriteRepository = favoriteRepository;
         this.markdownService = markdownService;
@@ -47,18 +52,30 @@ public class PostController {
 
     @GetMapping("/posts")
     public String list(@RequestParam(required = false) String q,
+                       @RequestParam(required = false) String tag,
+                       @RequestParam(required = false) String category,
                        Authentication authentication, Model model) {
         UserAccount user = accountService.current(authentication);
+        String selectedTag = normalizeTag(tag);
+        String selectedCategory = category == null ? "" : category.trim();
         List<Post> posts = postRepository.findByStatusOrderByPublishedAtDesc(PostStatus.PUBLISHED)
                 .stream()
                 .filter(post -> accessService.canView(post, user))
                 .filter(post -> q == null || q.isBlank()
-                        || post.getTitle().toLowerCase(Locale.ROOT).contains(q.toLowerCase(Locale.ROOT))
-                        || (post.getSummary() != null
-                        && post.getSummary().toLowerCase(Locale.ROOT).contains(q.toLowerCase(Locale.ROOT))))
+                        || post.getTitle().toLowerCase(Locale.ROOT).contains(q.trim().toLowerCase(Locale.ROOT)))
+                .filter(post -> selectedTag.isBlank()
+                        || post.getTags().stream()
+                        .anyMatch(postTag -> postTag.getName().equalsIgnoreCase(selectedTag)))
+                .filter(post -> selectedCategory.isBlank()
+                        || (post.getCategory() != null
+                        && post.getCategory().getName().equalsIgnoreCase(selectedCategory)))
                 .toList();
         model.addAttribute("posts", posts);
         model.addAttribute("query", q == null ? "" : q);
+        model.addAttribute("selectedTag", selectedTag);
+        model.addAttribute("selectedCategory", selectedCategory);
+        model.addAttribute("tagOptions", tagRepository.findAllByOrderByNameAsc());
+        model.addAttribute("categoryOptions", categoryRepository.findAllByOrderByNameAsc());
         return "posts/list";
     }
 
@@ -90,6 +107,7 @@ public class PostController {
     @GetMapping("/posts/new")
     public String newPost(Model model) {
         model.addAttribute("postForm", new PostForm());
+        model.addAttribute("categoryOptions", categoryRepository.findAllByOrderByNameAsc());
         return "posts/form";
     }
 
@@ -97,7 +115,7 @@ public class PostController {
     public String create(@ModelAttribute PostForm form, Authentication authentication) {
         Post post = postService.create(accountService.current(authentication), form.getTitle(),
                 form.getSummary(), form.getContentMarkdown(), form.getAllowedRoles(),
-                form.getTags(), form.isPublish());
+                form.getCategory(), form.getTags(), form.isPublish());
         return "redirect:/posts/" + post.getSlug();
     }
 
@@ -113,10 +131,12 @@ public class PostController {
         form.setContentMarkdown(post.getContentMarkdown());
         form.setAllowedRoles(post.getAllowedRoles().stream()
                 .map(role -> role.getCode().name()).sorted().reduce((a, b) -> a + "," + b).orElse(""));
+        form.setCategory(post.getCategory() == null ? "" : post.getCategory().getName());
         form.setTags(post.getTags().stream().map(Tag::getName).sorted()
                 .reduce((a, b) -> a + ", " + b).orElse(""));
         form.setPublish(post.getStatus() == PostStatus.PUBLISHED);
         model.addAttribute("postForm", form);
+        model.addAttribute("categoryOptions", categoryRepository.findAllByOrderByNameAsc());
         return "posts/form";
     }
 
@@ -127,7 +147,7 @@ public class PostController {
         Post post = getPost(id);
         ensureManage(post, user);
         postService.update(post, form.getTitle(), form.getSummary(), form.getContentMarkdown(),
-                form.getAllowedRoles(), form.getTags(), form.isPublish());
+                form.getAllowedRoles(), form.getCategory(), form.getTags(), form.isPublish());
         return "redirect:/posts/" + post.getSlug();
     }
 
@@ -205,5 +225,12 @@ public class PostController {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN);
         }
+    }
+
+    private String normalizeTag(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().replaceFirst("^#+", "");
     }
 }

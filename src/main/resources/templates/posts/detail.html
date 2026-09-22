@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head(${post.title)}"></head>
+<head th:replace="~{fragments/layout :: head(${post.title})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: nav}"></div>
 <main class="article-shell">
@@ -14,7 +14,10 @@
         <h1 th:text="${post.title}">文章标题</h1>
         <p class="article-summary" th:if="${post.summary}" th:text="${post.summary}">摘要</p>
         <div class="tag-list">
-            <span class="tag" th:each="tag : ${post.tags}" th:text="${tag.name}">标签</span>
+            <span class="tag" th:if="${post.category != null}" th:text="${post.category.name}">分类</span>
+            <a class="tag" th:each="tag : ${post.tags}"
+               th:href="@{/posts(tag=${tag.name})}"
+               th:text="'#' + tag.name">#标签</a>
         </div>
         <div class="article-actions">
             <form th:if="${favorite}" th:action="@{/posts/{id}/unfavorite(id=${post.id})}" method="post">
