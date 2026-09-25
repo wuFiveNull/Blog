@@ -3,63 +3,118 @@
 <head th:replace="~{fragments/layout :: head(${postForm.id == null ? '写文章' : '编辑文章'})}"></head>
 <body>
 <div th:replace="~{fragments/layout :: nav}"></div>
-<main class="editor-shell">
-    <div class="page-heading compact">
-        <div>
-            <p class="eyebrow">MARKDOWN EDITOR</p>
-            <h1 th:text="${postForm.id == null ? '写一篇文章' : '编辑文章'}">写一篇文章</h1>
+<main class="editor-shell editor-page">
+    <header class="editor-page-heading">
+        <div class="editor-heading-copy">
+            <div class="editor-title-mark" aria-hidden="true">B</div>
+            <div>
+                <p class="eyebrow">PERSONAL KNOWLEDGE BASE</p>
+                <h1 th:text="${postForm.id == null ? '写一篇文章' : '编辑文章'}">写一篇文章</h1>
+                <p class="editor-description">把实习、项目和技术思考整理成自己的知识记录。</p>
+            </div>
         </div>
-        <a class="secondary-button" th:href="@{/me/posts}">取消</a>
-    </div>
+        <a class="secondary-button" th:href="@{/me/posts}">返回我的文章</a>
+    </header>
+
     <form id="post-form" class="editor-form"
           th:action="${postForm.id == null ? '/posts' : '/posts/' + postForm.id}"
           th:object="${postForm}" method="post">
-        <label>标题
-            <input th:field="*{title}" maxlength="180" required>
-        </label>
-        <label>摘要
-            <input th:field="*{summary}" maxlength="500" placeholder="一句话说明这篇文章">
-        </label>
-        <div class="editor-toolbar">
-            <label class="inline-label">可见角色</label>
-            <label class="check-label"><input type="checkbox" class="role-choice" value="ADMIN"> 管理员</label>
-            <label class="check-label"><input type="checkbox" class="role-choice" value="OWNER"> 我自己</label>
-            <label class="check-label"><input type="checkbox" class="role-choice" value="USER"> 其他用户</label>
-            <input id="allowedRoles" type="hidden" th:field="*{allowedRoles}">
-        </div>
-        <label>分类
-            <input th:field="*{category}" list="category-options" maxlength="80"
-                   placeholder="实习 / 项目 / 八股">
-            <datalist id="category-options">
-                <option th:each="category : ${categoryOptions}" th:value="${category.name}"></option>
-            </datalist>
-        </label>
-        <label>标签
-            <input th:field="*{tags}" placeholder="#mysql, #Java, #项目经验">
-        </label>
-        <div class="editor-grid">
-            <label>Markdown 正文
-                <textarea id="contentMarkdown" th:field="*{contentMarkdown}" rows="24"
-                          placeholder="# 标题&#10;&#10;开始记录..." required></textarea>
-            </label>
-            <section class="preview-panel">
-                <div class="preview-heading">
-                    <span>预览</span>
-                    <button id="preview-button" class="text-button" type="button">刷新预览</button>
+        <section class="editor-card editor-info-card">
+            <div class="editor-section-heading">
+                <span class="editor-section-number">01</span>
+                <div>
+                    <h2>文章信息</h2>
+                    <p>先为这篇记录补充标题、分类和可见范围。</p>
                 </div>
-                <div id="preview" class="markdown-body preview-body">
-                    <p class="muted">点击“刷新预览”查看 Markdown 效果。</p>
+            </div>
+
+            <div class="editor-fields">
+                <label class="editor-field editor-field-wide">标题
+                    <input th:field="*{title}" maxlength="180" placeholder="给这篇文章起个标题" required>
+                </label>
+                <label class="editor-field editor-field-wide">摘要
+                    <input th:field="*{summary}" maxlength="500" placeholder="用一句话概括文章内容">
+                </label>
+                <label class="editor-field">分类
+                    <input th:field="*{category}" list="category-options" maxlength="80"
+                           placeholder="实习 / 项目 / 八股">
+                    <datalist id="category-options">
+                        <option th:each="category : ${categoryOptions}" th:value="${category.name}"></option>
+                    </datalist>
+                </label>
+                <label class="editor-field">标签
+                    <input th:field="*{tags}" placeholder="#mysql, #Java, #项目经验">
+                </label>
+
+                <fieldset class="role-picker">
+                    <legend>可见范围</legend>
+                    <p class="role-description">管理员可以查看所有文章；勾选角色决定其他用户能否查看。</p>
+                    <div class="role-options">
+                        <label class="check-label role-option"><input type="checkbox" class="role-choice" value="ADMIN"> 管理员</label>
+                        <label class="check-label role-option"><input type="checkbox" class="role-choice" value="OWNER"> 我自己</label>
+                        <label class="check-label role-option"><input type="checkbox" class="role-choice" value="USER"> 其他用户</label>
+                    </div>
+                    <input id="allowedRoles" type="hidden" th:field="*{allowedRoles}">
+                </fieldset>
+            </div>
+        </section>
+
+        <section class="editor-card editor-writing-card">
+            <div class="editor-writing-heading">
+                <div class="editor-section-heading">
+                    <span class="editor-section-number">02</span>
+                    <div>
+                        <h2>正文</h2>
+                        <p>使用 Markdown 编写，右侧会随输入自动更新。</p>
+                    </div>
                 </div>
-            </section>
-        </div>
-        <div class="upload-row">
-            <input id="image-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
-            <button id="upload-button" class="secondary-button" type="button">上传图片并插入</button>
-            <span id="upload-message" class="muted"></span>
-        </div>
-        <div class="form-actions">
-            <label class="check-label"><input th:field="*{publish}" type="checkbox"> 保存后发布</label>
-            <button class="primary-button" type="submit">保存文章</button>
+                <div class="editor-live-tools">
+                    <span id="preview-status" class="editor-live-state" data-state="loading" role="status" aria-live="polite">
+                        <span class="editor-state-dot"></span>
+                        <span>准备预览</span>
+                    </span>
+                    <button id="preview-button" class="secondary-button preview-refresh-button" type="button">立即刷新</button>
+                </div>
+            </div>
+
+            <div class="editor-grid">
+                <label class="editor-pane editor-source-pane">
+                    <span class="editor-pane-heading"><span>Markdown</span><span class="pane-hint">源码</span></span>
+                    <textarea id="contentMarkdown" th:field="*{contentMarkdown}" rows="24"
+                              placeholder="# 从这里开始记录...&#10;&#10;支持标题、列表、代码块和表格。" required></textarea>
+                </label>
+                <section class="preview-panel" aria-label="文章实时预览">
+                    <div class="preview-heading">
+                        <span>预览</span>
+                        <span class="preview-live-badge"><span></span>实时</span>
+                    </div>
+                    <div id="preview" class="markdown-body preview-body">
+                        <div class="preview-empty">
+                            <span class="preview-empty-mark" aria-hidden="true">✦</span>
+                            <strong>预览会显示在这里</strong>
+                            <p>在左侧输入 Markdown，稍等片刻即可看到效果。</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="upload-row">
+                <div class="upload-copy">
+                    <span class="upload-icon" aria-hidden="true">↑</span>
+                    <div><strong>插入图片</strong><span>上传后会自动插入到 Markdown 光标位置</span></div>
+                </div>
+                <div class="upload-controls">
+                    <input id="image-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+                    <button id="upload-button" class="secondary-button" type="button">上传并插入</button>
+                </div>
+                <span id="upload-message" class="upload-message muted" role="status"></span>
+            </div>
+        </section>
+
+        <div class="form-actions editor-submit-bar">
+            <span class="editor-save-note">内容和可见范围之后仍可编辑</span>
+            <label class="check-label publish-option"><input th:field="*{publish}" type="checkbox"> 保存后发布</label>
+            <button class="primary-button editor-save-button" type="submit">保存文章</button>
         </div>
     </form>
 </main>
